@@ -1,0 +1,10 @@
+{
+  "name": "googlemap-tile-slicer",
+  "version": "0.0.1",
+  "bin": {
+    "tile-slicer": "./cli.js"
+  },
+  "dependencies": {
+    "sharp": "0.33.5"
+  }
+}
