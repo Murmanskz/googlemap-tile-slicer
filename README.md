@@ -26,17 +26,15 @@ yarn
 
 ## 使用
 
+> 配置 config.js 后
 ```
-// 配置 config.js 后
-
-//切图
 node index.js
 ```
 
 ## 瓦片坐标范围
 
+> 获取瓦片坐标范围 让googleMap在此区域内才请求自定义瓦片图
 ```
-// 获取瓦片坐标范围 让googleMap在此区域内才请求自定义瓦片图
 node mergeBounds.js
 ```
 
