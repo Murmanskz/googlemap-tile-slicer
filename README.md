@@ -1,6 +1,6 @@
 # GoogleMap Tile Slicer
 
-googlemap-tile-slicer 是一个命令行工具，用于将输入的图片切割为 Google Maps 瓦片图。该工具通过命令行引导用户输入图片路径、地图的经纬度范围、Google Maps 的缩放级别，最终输出瓦片图。
+googlemap-tile-slicer 是一个googlemap瓦片切割工具，将输入的图片切割为 Google Maps 瓦片图。该工具通过图片路径、地图的经纬度范围、Google Maps 的缩放级别，最终输出瓦片图。以及可以获取瓦片图范围
 
 ## 功能
 
@@ -15,25 +15,24 @@ googlemap-tile-slicer 是一个命令行工具，用于将输入的图片切割�
 - sharp: [0.33.5](https://github.com/lovell/sharp)
 
 
-## 安装
-### 通过 npm 安装
-```
-npm install -g googlemap-tile-slicer
-```
 
 ## 使用
 
-安装完成后，你可以在终端运行以下命令来启动工具：
+
 
 ```
-tile-slicer
-```
-工具会逐步引导你输入必要的配置：
+nvm use
 
-1. **输入图片地址**: 你需要输入待处理图片的路径。
-2. **输入左上角的经纬度**: 例如，`35.6895, 139.6917`。
-3. **输入右下角的经纬度**: 例如，`35.6890, 139.6920`。
-4. **输入 Google Maps 的缩放范围**: 例如，10, 15，表示切割从 zoom 级别 10 到 15 的瓦片。
-5. **输出目录**: 瓦片图会生成到指定的输出目录中。
+yarn
+
+// 配置 config.js 后
+
+node index.js
+```
+
+## TODO
+
+1. 支持命令行执行
+2. 逐步引导用户输入配置
 
 

@@ -11,7 +11,7 @@ const bounds = {
   //   topLeft: { lat: 0.554159, lng: 127.883903 }, // 左上角经纬度
   //   bottomRight: { lat: 0.462128, lng: 128.047638 } // 右下角经纬度
   // }
-  '20241010': {
+  '20241022': {
     topLeft: { lat: 0.828743, lng: 127.862529 }, // 左上角经纬度
     bottomRight: { lat: 0.458371, lng: 128.073281 } // 右下角经纬度
   }
@@ -20,12 +20,12 @@ const bounds = {
 /**
  * 当前处理图片的name
  */
-const currentImg = '20241010'
+const currentImg = '20241022'
 
 /**
  * ！！特别重要 认为原始图片在baseZoom 下是全分辨率展示
  */
-const baseZoom = 18;
+const baseZoom = 17;
 
 /**
  * 图片要处理的缩放范围
@@ -34,6 +34,12 @@ const zoomRange = [12, baseZoom]
 
 // 瓦片分辨率
 const baseOneTileSize = 256;
+
+// 图片质量 0-100
+const quality = 80
+
+// 图片格式
+const format = 'webp'
 
 
 
@@ -46,5 +52,7 @@ module.exports = {
   zoomRange,
   baseOneTileSize,
   baseZoom,
-  limitInputPixels: 10000000000 // 限制输入图片像素数量
+  limitInputPixels: 10000000000, // 限制输入图片像素数量
+  format,
+  quality
 }

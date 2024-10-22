@@ -1,17 +1,19 @@
 /**
- * 切图
- * https://www.cnblogs.com/zhangbig/p/17439290.html  参考
+ * 图像重采样
+ * 将原图放大到目标zoom所需的尺寸，再压缩到各个zoom所需的尺寸
+ * 配置config.js  执行入口  index.js 
+ * 获取瓦片范围 mergeBounds.js
  */
-
 const sharp = require('sharp');
 const path = require('path');
-const fs = require('fs');
-const { bondLatlng, pngName, zoomRange, baseOneTileSize, limitInputPixels } = require('./config.js');
+const { bondLatlng, pngName, baseZoom, baseOneTileSize, zoomRange, limitInputPixels } = require('./config.js');
+const createTiles =  require('./createTiles.js');
 
 
-/// 输出目录
-const outputDir = path.join(__dirname, 'tiles');
+// 本地高清图片路径
+const imagePath = path.join(__dirname, `./${pngName}.png`)
 
+let originalWidth, originalHeight;
 
 function latLngToTileXY(lat, lng, zoom) {
 
@@ -29,8 +31,51 @@ function latLngToTileXY(lat, lng, zoom) {
 }
 
 
-async function createTiles(zoomRange) {
+
+
+async function resizeOrgImg(zoomRange) {
+  // 获取原始图片的尺寸
+  const metadata = await sharp(imagePath).metadata();
+  originalWidth = metadata.width;
+  originalHeight = metadata.height;
+
   
+  // 左上角经纬度到瓦片坐标
+  const baseTopLeft = latLngToTileXY(bondLatlng.topLeft.lat, bondLatlng.topLeft.lng, baseZoom);
+
+  // 右下角经纬度到瓦片坐标
+  const baseBottomRight = latLngToTileXY(bondLatlng.bottomRight.lat, bondLatlng.bottomRight.lng, baseZoom);
+
+
+  const baseImageSizeInTile = {
+    x: baseBottomRight.tileX - baseTopLeft.tileX + 1,
+    y: baseBottomRight.tileY - baseTopLeft.tileY + 1,
+  }
+  
+  
+  const compressedImageBase = path.join(__dirname, `compressed-image-base-${pngName}.png`);
+
+  // -------------------------------------------------------------------------
+
+  // 计算放大到basezoom时的航拍图分辨率
+  // 为了保证提供的经纬度完美贴合地图，放大缩小时候，不能直接按照宽度等比例放大！！！，适当的变形来适合地图
+  const imgWidthInBaseZoom = baseImageSizeInTile.x * baseOneTileSize
+  const imgHeightInBaseZoom = baseImageSizeInTile.y * baseOneTileSize
+
+
+  // 放大到基于baseZoom * 256
+  // 强行根据宽高缩放，使用fill填充比例，可能会轻微变形 但是这是保证贴图吻合地图的重要处理逻辑
+  await sharp(imagePath)
+      .resize(Math.floor(imgWidthInBaseZoom), Math.floor(imgHeightInBaseZoom), {fit: 'fill'})
+      .png()
+      .toFile(path.join(compressedImageBase));
+
+  console.log('放大到baseZoom', `${originalWidth} -> ${Math.floor(imgWidthInBaseZoom)}`);
+  // console.log('floor', `${imgWidthInBaseZoom}*${imgHeightInBaseZoom} -> ${Math.floor(imgWidthInBaseZoom)}*${Math.floor(imgHeightInBaseZoom)}`);
+
+  // -------------------------------------------------------------------------
+  
+
   const [startZoom, endZoom] = zoomRange
 
   for (let currentZoom = endZoom; currentZoom >= startZoom; currentZoom--) {
@@ -47,152 +92,36 @@ async function createTiles(zoomRange) {
       y: [topLeft.tileY, bottomRight.tileY]
     }
 
+    // console.log(currentZoom, tileXYRange);
+    
 
     // 分级压缩图像
     const compressedImagePath = path.join(__dirname, `compressed-image-${pngName}-${currentZoom}.png`);
 
-    // 获取压缩后的图像尺寸
-    const compressedMetadata = await sharp(compressedImagePath, { limitInputPixels }).metadata();
-    const imageWidth = compressedMetadata.width;
-    const imageHeight = compressedMetadata.height;
 
+    const scaledWidth = (tileXYRange.x[1] - tileXYRange.x[0]) * baseOneTileSize
+    const scaledHeight = (tileXYRange.y[1] - tileXYRange.y[0]) * baseOneTileSize
 
-    // 输出当前zoom下的文件
-    const {x:xRange, y:yRange } = tileXYRange
-
-    // 遍历给定的 x 和 y 范围，切割图片
-    let baseOneTileSizeX = 0
-    let baseOneTileSizeY = 0
-    let top = 0
-    let left = 0
-    let i = 0;
-
-    // 真实地图西北角与瓦片的起始4角的偏移量
-    const offsetX = (xRange[0] - Math.floor(xRange[0])) * baseOneTileSize
-    const offsetY = (yRange[0] - Math.floor(yRange[0])) * baseOneTileSize
-
-
-    // console.log('offset', Math.floor(yRange[0]), Math.floor(yRange[1]));
+    console.log(currentZoom, `${Math.floor(scaledWidth)} * ${Math.floor(scaledHeight)}`);
     
 
-    for (let x = Math.floor(xRange[0]); x <= Math.floor(xRange[1]); x++) {
-      let ii = 0
-      for (let y = Math.floor(yRange[0]); y <= Math.floor(yRange[1]); y++) {
+    // 压缩结果
+    // 强行根据宽高缩放，使用fill填充比例，可能会轻微变形 但是这是保证贴图吻合地图的重要处理逻辑
+    await sharp(compressedImageBase, { limitInputPixels })
+      .resize(Math.floor(scaledWidth), Math.floor(scaledHeight), {fit: 'fill'}) 
+      .png()
+      .toFile(compressedImagePath);
 
-        // 计算该瓦片在图片中的像素坐标
-        left = Math.floor((baseOneTileSize - offsetX) + (x -  Math.floor(xRange[0]) - 1) * baseOneTileSize)
-        top = Math.floor((baseOneTileSize - offsetY) + (y -  Math.floor(yRange[0]) - 1) * baseOneTileSize)
-        ii++
-
-        
-        
-        // 如果瓦片超出边界，用透明像素填充
-        let extendOptions = {
-          top: 0,
-          left: 0,
-          bottom: 0, // 如果瓦片的高度不足 256 像素，填充底部
-          right: 0, // 如果瓦片的宽度不足 256 像素，填充右侧
-          extendWith: 'background',
-          background: { r: 0, g: 0, b: 0, alpha: 0 } // 使用透明像素填充
-        };
-        
-        if (x === Math.floor(xRange[0])) {
-          // 处理第一列
-          baseOneTileSizeX =  Math.floor(baseOneTileSize - offsetX)
-          left = 0
-          // 补充左边的空白
-          extendOptions = {
-            ...extendOptions, 
-            left: baseOneTileSize - baseOneTileSizeX,
-            right: 0,
-          }
-        } else if (x === Math.floor(xRange[1])) {
-          // 处理最后一排
-          // 跟图片像素对比，谁小取谁
-          baseOneTileSizeX = Math.floor(Math.min((xRange[1] - Math.floor(xRange[1])) * baseOneTileSize, imageWidth - left));
-          // 补充右边的空白像素
-          extendOptions = {
-            ...extendOptions, 
-            left: 0,
-            right:  baseOneTileSize - baseOneTileSizeX,
-          };
-        } else {
-          baseOneTileSizeX = baseOneTileSize
-          // x轴不需要补充像素
-          extendOptions = {
-            ...extendOptions,
-            left: 0,
-            right: 0
-          };
-        }
-        
-
-        if (y === Math.floor(yRange[0])) {
-           // 处理第一行
-          baseOneTileSizeY = Math.floor(baseOneTileSize - offsetY);
-          top = 0
-          // 补充上边的空白像素
-          extendOptions = {
-            ...extendOptions, 
-            top: baseOneTileSize - baseOneTileSizeY,
-            bottom: 0,
-          }
-        } else if (y === Math.floor(yRange[1])) {
-          // 处理最后一行
-          // 跟图片像素对比，谁小取谁
-          baseOneTileSizeY = Math.floor(Math.min((yRange[1] - Math.floor(yRange[1])) * baseOneTileSize, imageHeight - top));
-          // console.log('处理最后一行', (yRange[1] - Math.floor(yRange[1])) * baseOneTileSize);
-          
-          // 补充下边的空白像素
-          extendOptions = {
-            ...extendOptions, 
-            top: 0,
-            bottom: baseOneTileSize - baseOneTileSizeY,
-          }
-        } else {
-          baseOneTileSizeY = baseOneTileSize
-          // 上下不需要补充像素
-          extendOptions = {
-            ...extendOptions, 
-            top: 0,
-            bottom: 0,
-          }
-        }
-
-        // const tilePath = path.join(outputDir, `${currentZoom}/${x}`);
-
-        if (!fs.existsSync(outputDir)) {
-          fs.mkdirSync(outputDir, { recursive: true });
-        }
-
-        
-        let consoleText = `${currentZoom}_${x}_${y}.png   X: ${left} ~ ${left + baseOneTileSizeX}, Y: ${top} ~ ${top + baseOneTileSizeY}`;
-        
-        let fileName = `${currentZoom}_${x}_${y}.png`;
-        let filePath = path.join(outputDir, fileName);
-
-        // 如果重复文件名  加后缀，为了手动处理两个航拍图切片公用一个瓦片的情况
-        if (fs.existsSync(filePath)) {
-          fileName = `${currentZoom}_${x}_${y}_repet.png`;
-          filePath = path.join(outputDir, fileName);
-        }
-        
-        
-          // 使用 sharp 进行裁剪
-          sharp(compressedImagePath, { limitInputPixels })
-          .extract({ left: left, top: top, width: baseOneTileSizeX, height: baseOneTileSizeY })
-          .extend(extendOptions) // 填充不足的部分
-          .toFile(filePath)
-          .then(() => {
-            console.log(consoleText);
-          })
-          .catch((err) => {
-            console.error(consoleText);
-          });
-      }
-      i++
-    }
+    
   }
 }
 
-createTiles(zoomRange)
+async function main() {
+  // 剪裁 分辨率重采样
+  await resizeOrgImg(zoomRange)
+  // 切图
+  createTiles(zoomRange)
+}
+
+main()
+
