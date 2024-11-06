@@ -28,27 +28,27 @@ yarn
 
 > 配置 config.js 后
 ```
-node index.js
+node index
 ```
 
 ### 断点续切
-> 由于某些未知错误或者断电导致计算机退出切图程序，该工具支持断点续切，即重新运行程序会从上次切图的位置继续切图（目前只支持手动续切）
+> 由于某些未知错误或者断电导致计算机退出切图程序，该工具支持断点续切，重新运行程序会从上次切图的位置继续切图（考虑到可能多次执行切图，目前只推荐手动修改配置续切）
 
 1. 找到tiles文件里最新的一个文件 拿到文件名  / 18_123456_789039.webp
-2. 编辑 `createTilesStartFromBreakpoint.js` 文件中的 `_breakpointStart`  `_zoomRange`变量
+2. 编辑 `config.js` 文件中的  `breakpointZoomRange` `breakpointStart`变量
 
 ````
 // 剩余需要切图的zoom范围
-const _zoomRange = [12, 18]
+breakpointZoomRange = [12, 18]
 
-// 对应最后一个文件名的x y坐标
-const _breakpointStart = [123456, 789039]
+// 对应最后一个文件名的x y瓦片坐标
+breakpointStart = [123456, 789039]
 
 ````
-### 执行断点续切
+### 执行续切
 
 ```
-node createTilesStartFromBreakpoint.js
+node createTilesStartFromBreakpoint
 ```
 
 
@@ -58,12 +58,12 @@ node createTilesStartFromBreakpoint.js
 
 > 获取瓦片坐标范围 让googleMap在此区域内才请求自定义瓦片图
 ```
-node mergeBounds.js
+node mergeBounds
 ```
 
-## TODO
+## FEATURES
 
-1. 支持命令行执行
-2. 逐步引导用户输入配置
+- [ ]支持命令行执行
+- [ ]逐步引导用户输入配置
 
 

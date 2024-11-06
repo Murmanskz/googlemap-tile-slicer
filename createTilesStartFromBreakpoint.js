@@ -6,7 +6,7 @@
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
-const { bondLatlng, pngName, baseOneTileSize, limitInputPixels, format, quality  } = require('./config.js');
+const { bondLatlng, pngName, baseOneTileSize, limitInputPixels, format, quality, breakpointStart, breakpointZoomRange  } = require('./config.js');
 
 
 
@@ -31,10 +31,10 @@ function latLngToTileXY(lat, lng, zoom) {
 }
 
 
-async function createTiles(breakpointZoomRange, breakpointStart) {
+async function createTiles(_breakpointZoomRange, _breakpointStart) {
   
-  const [startZoom, endZoom] = breakpointZoomRange
-  const [breakX, breakY] = breakpointStart // 断点最后一张图片的瓦片坐标
+  const [startZoom, endZoom] = _breakpointZoomRange
+  const [breakX, breakY] = _breakpointStart // 断点最后一张图片的瓦片坐标
 
   for (let currentZoom = endZoom; currentZoom >= startZoom; currentZoom--) {
     
@@ -207,9 +207,8 @@ async function createTiles(breakpointZoomRange, breakpointStart) {
   }
 }
 
-const _zoomRange = [12, 18]
-const _breakpointStart = [224249, 130662]
 
-createTiles(_zoomRange, _breakpointStart)
+
+createTiles(breakpointZoomRange, breakpointStart)
 
 
