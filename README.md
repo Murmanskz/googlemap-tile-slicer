@@ -16,17 +16,18 @@ googlemap-tile-slicer 是一个googlemap瓦片切割工具，将输入的图片�
 
 
 
-## 使用
-
-
+## 安装依赖
 
 ```
 nvm use
 
 yarn
+```
 
-// 配置 config.js 后
+## 使用
 
+> 配置 config.js 后
+```
 node index.js
 ```
 
@@ -52,6 +53,13 @@ node createTilesStartFromBreakpoint.js
 
 
  
+
+## 瓦片坐标范围
+
+> 获取瓦片坐标范围 让googleMap在此区域内才请求自定义瓦片图
+```
+node mergeBounds.js
+```
 
 ## TODO
 
