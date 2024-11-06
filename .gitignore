@@ -1,3 +1,4 @@
 node_modules*
 tiles*
 *.png
+.vscode
