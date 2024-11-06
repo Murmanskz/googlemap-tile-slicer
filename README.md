@@ -61,9 +61,10 @@ node createTilesStartFromBreakpoint
 node mergeBounds
 ```
 
-## FEATURES
+## FEATURES ✅
 
-- [ ]支持命令行执行
-- [ ]逐步引导用户输入配置
+⬜️ 支持命令行执行
+
+⬜️ 逐步引导用户输入配置
 
 
