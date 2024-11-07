@@ -42,19 +42,6 @@ const quality = 80
 const format = 'webp'
 
 
-// 断点记录，用于断点续切
-let breakpointZoomRange = [12, 18]
-let breakpointStart = [224249, 130662]
-
-const setBreakpointZoomRange = (range) => {
-  breakpointZoomRange = range
-}
-
-const setBreakpointStart = (value) => {
-  breakpointStart = value
-}
-
-
 module.exports = {
   // 图片精确经纬度
   bondLatlng: bounds[currentImg],
@@ -66,8 +53,4 @@ module.exports = {
   limitInputPixels: 10000000000, // 限制输入图片像素数量
   format,
   quality,
-  breakpointZoomRange,
-  breakpointStart,
-  setBreakpointZoomRange,
-  setBreakpointStart,
 }
