@@ -6,6 +6,7 @@
  */
 const sharp = require('sharp');
 const path = require('path');
+const fs = require('fs');
 const { bondLatlng, pngName, baseZoom, baseOneTileSize, zoomRange, limitInputPixels } = require('./config.js');
 const createTiles =  require('./createTiles.js');
 
@@ -55,6 +56,8 @@ async function resizeOrgImg(zoomRange) {
   
   const compressedImageBase = path.join(__dirname, `compressed-image-base-${pngName}.png`);
 
+  
+
   // -------------------------------------------------------------------------
 
   // 计算放大到basezoom时的航拍图分辨率
@@ -63,12 +66,15 @@ async function resizeOrgImg(zoomRange) {
   const imgHeightInBaseZoom = baseImageSizeInTile.y * baseOneTileSize
 
 
-  // 放大到基于baseZoom * 256
-  // 强行根据宽高缩放，使用fill填充比例，可能会轻微变形 但是这是保证贴图吻合地图的重要处理逻辑
-  await sharp(imagePath)
-      .resize(Math.floor(imgWidthInBaseZoom), Math.floor(imgHeightInBaseZoom), {fit: 'fill'})
-      .png()
-      .toFile(path.join(compressedImageBase));
+  // 如果重复文件名 代表已经处理过
+  if (!fs.existsSync(compressedImageBase)) {
+    // 放大到基于baseZoom * 256
+    // 强行根据宽高缩放，使用fill填充比例，可能会轻微变形 但是这是保证贴图吻合地图的重要处理逻辑
+    await sharp(imagePath)
+    .resize(Math.floor(imgWidthInBaseZoom), Math.floor(imgHeightInBaseZoom), {fit: 'fill'})
+    .png()
+    .toFile(path.join(compressedImageBase));
+  }
 
   console.log('放大到baseZoom', `${originalWidth} -> ${Math.floor(imgWidthInBaseZoom)}`);
   // console.log('floor', `${imgWidthInBaseZoom}*${imgHeightInBaseZoom} -> ${Math.floor(imgWidthInBaseZoom)}*${Math.floor(imgHeightInBaseZoom)}`);
@@ -97,6 +103,12 @@ async function resizeOrgImg(zoomRange) {
 
     // 分级压缩图像
     const compressedImagePath = path.join(__dirname, `compressed-image-${pngName}-${currentZoom}.png`);
+
+    // 如果重复文件名 代表已经切割过
+    if (fs.existsSync(compressedImagePath)) {
+      // 跳过
+      continue
+    }
 
 
     const scaledWidth = (tileXYRange.x[1] - tileXYRange.x[0]) * baseOneTileSize

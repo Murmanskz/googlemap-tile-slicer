@@ -32,23 +32,13 @@ node index
 ```
 
 ### 断点续切
-> 由于某些未知错误或者断电导致计算机退出切图程序，该工具支持断点续切，重新运行程序会从上次切图的位置继续切图（考虑到可能多次执行切图，目前只推荐手动修改配置续切）
+> 由于某些未知错误或者断电导致计算机退出切图程序，该工具支持断点续切，重新运行程序即可跳过已经切过的瓦片继续切图
+> > 注意不要删除tiles文件夹  这样使程序从0开始切图 
 
-1. 找到tiles文件里最新的一个文件 拿到文件名  / 18_123456_789039.webp
-2. 编辑 `config.js` 文件中的  `breakpointZoomRange` `breakpointStart`变量
-
-````
-// 剩余需要切图的zoom范围
-breakpointZoomRange = [12, 18]
-
-// 对应最后一个文件名的x y瓦片坐标
-breakpointStart = [123456, 789039]
-
-````
 ### 执行续切
 
 ```
-node createTilesStartFromBreakpoint
+node index
 ```
 
 

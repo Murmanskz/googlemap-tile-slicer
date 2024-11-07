@@ -180,10 +180,16 @@ async function createTiles(zoomRange) {
 
         let consoleText = `${progress} ${currentZoom}级/${totalTiles}片  ${xyRangeProgress}  ${fileName}`;
 
-        // 如果重复文件名  加后缀，为了手动处理两个航拍图切片公用一个瓦片的情况
+        // // 如果重复文件名  加后缀，为了手动处理两个航拍图切片公用一个瓦片的情况
+        // if (fs.existsSync(filePath)) {
+        //   fileName = `${currentZoom}_${x}_${y}_repet.${format}`;
+        //   filePath = path.join(outputDir, fileName);
+        // }
+
+        // 如果重复文件名 代表已经切割过
         if (fs.existsSync(filePath)) {
-          fileName = `${currentZoom}_${x}_${y}_repet.${format}`;
-          filePath = path.join(outputDir, fileName);
+          // 跳过
+          continue
         }
         
         // 使用 sharp 进行裁剪
