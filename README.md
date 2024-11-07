@@ -51,10 +51,12 @@ node index
 node mergeBounds
 ```
 
-## FEATURES ✅
+## FEATURES 
 
-⬜️ 支持命令行执行
+- [ ] 支持命令行执行
+- [ ] 逐步引导用户输入配置
 
-⬜️ 逐步引导用户输入配置
+
+
 
 
